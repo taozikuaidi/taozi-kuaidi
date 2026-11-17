@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="桃子家快递查询">
+<meta name="theme-color" content="#ec4899">
+<title>桃子家快递查询</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#ec4899;--primary-light:#f472b6;--primary-dark:#db2777;--bg:#fdf2f8;--card:#fff;--text:#1e1e2f;--text2:#6b7280;--border:#fce7f3;--radius:14px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);min-height:100vh;color:var(--text);padding:16px;-webkit-tap-highlight-color:transparent}
+
+.header{text-align:center;padding:32px 0 24px}
+.header h1{font-size:28px;font-weight:700;color:var(--primary)}
+.header p{color:var(--text2);font-size:14px;margin-top:6px}
+
+.card{background:var(--card);border-radius:var(--radius);padding:24px;max-width:460px;margin:0 auto;box-shadow:0 4px 24px rgba(236,72,153,.1)}
+
+/* Tab */
+.tabs{display:flex;background:#fdf2f8;border-radius:10px;padding:4px;margin-bottom:20px}
+.tabs button{flex:1;padding:10px;border:none;border-radius:8px;font-size:14px;font-weight:600;color:var(--text2);background:none;cursor:pointer;transition:all .2s}
+.tabs button.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(236,72,153,.15)}
+
+.panel{display:none}
+.panel.active{display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* 输入区 */
+.input-wrap{margin-bottom:14px}
+.input-wrap label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.input-wrap label .tip{font-weight:400;font-size:12px;color:#9ca3af;margin-left:4px}
+.input-wrap input,.input-wrap select{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-size:16px;transition:all .2s;background:#fff;appearance:none;-webkit-appearance:none}
+.input-wrap input:focus,.input-wrap select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(236,72,153,.1)}
+.input-wrap select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23ec4899' d='M7 10L2 5h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+
+/* 按钮 */
+.btn-primary{width:100%;padding:15px;border:none;border-radius:10px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));cursor:pointer;transition:all .2s;margin-top:4px}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.btn-secondary{padding:12px;border:2px solid var(--border);border-radius:10px;font-size:14px;background:#fff;color:var(--text2);cursor:pointer;transition:all .2s}
+.btn-secondary:active{background:#fdf2f8}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+
+/* 历史记录 */
+.history{margin-top:24px}
+.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.history-header h3{font-size:14px;color:var(--text2);font-weight:600}
+.history-list{display:flex;flex-direction:column;gap:8px}
+.history-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fdf2f8;border-radius:10px;cursor:pointer;transition:background .15s}
+.history-item:hover{background:#fce7f3}
+.history-item .info{flex:1;min-width:0}
+.history-item .num{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-item .com{font-size:12px;color:var(--text2);margin-top:2px}
+.history-item .actions{display:flex;gap:6px;flex-shrink:0}
+.history-item .actions button{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;cursor:pointer;white-space:nowrap}
+.history-item .actions .re-query{border-color:var(--primary);color:var(--primary)}
+.history-item .actions .copy-link{color:var(--text2)}
+.history-empty{text-align:center;padding:20px;color:var(--text2);font-size:13px}
+
+/* 底部 */
+.footer{text-align:center;padding:24px 0 16px;font-size:12px;color:#f9a8d4}
+
+/* 弹窗 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:360px;animation:pop .2s ease}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h3{margin-bottom:12px;font-size:16px;color:var(--primary)}
+.modal p.sub{font-size:13px;color:#6b7280;margin-bottom:12px;line-height:1.5}
+.modal input{width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:8px;word-break:break-all}
+.modal .hint{font-size:12px;color:#9ca3af;margin-bottom:16px;line-height:1.5}
+.modal .modal-btns{display:flex;gap:10px}
+.modal .modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;font-size:14px;cursor:pointer}
+.modal .modal-btns .confirm{background:var(--primary);color:#fff}
+.modal .modal-btns .cancel{background:#fdf2f8;color:var(--text2)}
+
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:rgba(0,0,0,.8);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:999;transition:transform .2s;max-width:80%;text-align:center}
+.toast.show{transform:translate(-50%,-50%) scale(1)}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:rgba(253,242,248,.9);display:none;align-items:center;justify-content:center;z-index:200;flex-direction:column}
+.loading-overlay.show{display:flex}
+.loading-overlay .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay p{margin-top:12px;color:var(--primary);font-size:14px;font-weight:600}
+
+@media(max-width:480px){.card{padding:20px 16px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🍑 桃子家快递查询</h1>
+  <p>单号 / 手机号，一键直达物流详情</p>
+</div>
+
+<div class="card">
+  <div class="tabs">
+    <button class="active" onclick="switchTab('num')">📄 单号查询</button>
+    <button onclick="switchTab('phone')">📱 手机号查询</button>
+  </div>
+
+  <!-- 单号查询面板 -->
+  <div class="panel active" id="panel-num">
+    <div class="input-wrap">
+      <label>快递单号</label>
+      <input id="num" type="tel" placeholder="输入或粘贴快递单号" autocomplete="off" inputmode="numeric">
+    </div>
+    <div class="input-wrap">
+      <label>快递公司 <span class="tip">选"自动识别"即可</span></label>
+      <select id="com">
+        <option value="">🔍 自动识别（推荐）</option>
+        <option value="shunfeng">顺丰速运</option>
+        <option value="yuantong">圆通速递</option>
+        <option value="zhongtong">中通快递</option>
+        <option value="shentong">申通快递</option>
+        <option value="yunda">韵达快递</option>
+        <option value="jd">京东物流</option>
+        <option value="ems">EMS</option>
+        <option value="debang">德邦快递</option>
+        <option value="jt">极兔速递</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="queryByNum()">查 询</button>
+  </div>
+
+  <!-- 手机号查询面板 -->
+  <div class="panel" id="panel-phone">
+    <div class="input-wrap">
+      <label>手机号码 <span class="tip">收件/寄件人手机号</span></label>
+      <input id="phone" type="tel" placeholder="输入 11 位手机号" maxlength="11" autocomplete="off" inputmode="numeric">
+    </div>
+    <div class="input-wrap">
+      <label>快递公司 <span class="tip">手机号查询需指定公司</span></label>
+      <select id="comPhone">
+        <option value="shunfeng">顺丰速运</option>
+        <option value="yuantong">圆通速递</option>
+        <option value="zhongtong">中通快递</option>
+        <option value="shentong">申通快递</option>
+        <option value="yunda">韵达快递</option>
+        <option value="jd">京东物流</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="queryByPhone()">查 询</button>
+    <p style="font-size:12px;color:#9ca3af;margin-top:10px;line-height:1.6">
+      💡 手机号查询会跳转到对应快递公司的"手机号查件"页面，可在该页面查看该手机号关联的包裹。
+    </p>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="showLinkModal()">🔗 生成分享链接</button>
+    <button class="btn-secondary" onclick="clearHistory()">🗑️ 清空记录</button>
+  </div>
+
+  <div class="history" id="historySection">
+    <div class="history-header">
+      <h3>🕐 最近查询</h3>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<p class="footer">🍑 桃子家快递查询 · 纯本地运行 · 无数据上传</p>
+
+<!-- 分享链接弹窗 -->
+<div class="modal-overlay" id="linkModal">
+  <div class="modal">
+    <h3>🔗 生成查询链接</h3>
+    <p class="sub">把当前查询条件生成一个链接，发给别人点开就能直接查：</p>
+    <input id="linkOutput" readonly onclick="this.select()">
+    <p class="hint">💡 生成后点"复制链接"，分享到微信/QQ，对方打开即可查询</p>
+    <div class="modal-btns">
+      <button class="cancel" onclick="closeModal('linkModal')">关闭</button>
+      <button class="confirm" onclick="copyLink()">复制链接</button>
+    </div>
+  </div>
+</div>
+
+<!-- 手机号结果弹窗 -->
+<div class="modal-overlay" id="phoneModal">
+  <div class="modal">
+    <h3>📱 手机号查件</h3>
+    <p class="sub" id="phoneTip"></p>
+    <input id="phoneOutput" readonly onclick="this.select()">
+    <p class="hint">即将跳转到快递公司页面，使用手机号查件</p>
+    <div class="modal-btns">
+      <button class="cancel" onclick="closeModal('phoneModal')">取消</button>
+      <button class="confirm" onclick="openPhoneLink()">立即跳转</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <p>正在跳转...</p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Tab 切换 =====
+function switchTab(name) {
+  document.querySelectorAll('.tabs button').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && name === 'num') || (i === 1 && name === 'phone'));
+  });
+  document.getElementById('panel-num').classList.toggle('active', name === 'num');
+  document.getElementById('panel-phone').classList.toggle('active', name === 'phone');
+}
+
+// ===== Loading =====
+function showLoading() {
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loading').classList.remove('show');
+}
+
+// ===== 历史记录 =====
+let history = JSON.parse(localStorage.getItem('taozi_express_history') || '[]');
+
+function saveHistory(item) {
+  history = history.filter(h => !(h.type === item.type && h.key === item.key));
+  history.unshift(item);
+  if (history.length > 15) history = history.slice(0, 15);
+  localStorage.setItem('taozi_express_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (history.length === 0) {
+    list.innerHTML = '<div class="history-empty">暂无查询记录</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => `
+    <div class="history-item" onclick="${h.type === 'num' ? `fillNum('${h.key}','${h.com || ''}')` : `fillPhone('${h.key}','${h.com || ''}')`}">
+      <div class="info">
+        <div class="num">${h.type === 'num' ? '📄 ' : '📱 '}${h.key}</div>
+        <div class="com">${h.comName || '自动识别'} · ${h.time}</div>
+      </div>
+      <div class="actions" onclick="event.stopPropagation()">
+        <button class="re-query" onclick="${h.type === 'num' ? `fillNumAndQuery('${h.key}','${h.com || ''}')` : `fillPhoneAndQuery('${h.key}','${h.com || ''}')`}">查询</button>
+        <button class="copy-link" onclick="copyText('${h.key}')">复制</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function fillNum(num, com) {
+  switchTab('num');
+  document.getElementById('num').value = num;
+  document.getElementById('com').value = com;
+  document.getElementById('num').focus();
+}
+function fillNumAndQuery(num, com) {
+  fillNum(num, com);
+  queryByNum();
+}
+function fillPhone(phone, com) {
+  switchTab('phone');
+  document.getElementById('phone').value = phone;
+  document.getElementById('comPhone').value = com;
+  document.getElementById('phone').focus();
+}
+function fillPhoneAndQuery(phone, com) {
+  fillPhone(phone, com);
+  queryByPhone();
+}
+
+// ===== 单号查询（直接跳转）=====
+function queryByNum() {
+  const num = document.getElementById('num').value.trim().replace(/\s+/g, '');
+  const com = document.getElementById('com').value;
+  const btn = document.querySelector('#panel-num .btn-primary');
+
+  if (!num) { showToast('请输入快递单号'); document.getElementById('num').focus(); return; }
+  if (num.length < 6) { showToast('单号太短，请检查'); return; }
+
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = '跳转中...';
+  showLoading();
+
+  // 顺丰需要手机尾号
+  let phone = '';
+  if (com === 'shunfeng') {
+    phone = prompt('顺丰单号需要输入收件人手机尾号（4位）：', '');
+    if (phone === null) { btn.disabled = false; btn.textContent = originalText; hideLoading(); return; }
+  }
+
+  let url = `https://m.kuaidi100.com/app/query/?coname=taozi&nu=${encodeURIComponent(num)}`;
+  if (com) url += `&com=${com}`;
+  if (phone) url += `&phone=${encodeURIComponent(phone)}`;
+
+  const comName = document.getElementById('com').selectedOptions[0].text;
+  saveHistory({ type: 'num', key: num, com, comName, time: formatTime() });
+
+  // 直接跳转（不用新窗口）
+  setTimeout(() => {
+    location.href = url;
+  }, 400);
+}
+
+document.getElementById('num').addEventListener('keydown', e => { if (e.key === 'Enter') queryByNum(); });
+
+// ===== 手机号查询（直接跳转）=====
+function queryByPhone() {
+  const phone = document.getElementById('phone').value.trim().replace(/\s+/g, '');
+  const com = document.getElementById('comPhone').value;
+
+  if (!/^1[3-9]\d{9}$/.test(phone)) { showToast('请输入正确的 11 位手机号'); document.getElementById('phone').focus(); return; }
+
+  const urls = {
+    shunfeng: `https://www.sf-express.com/cn/zh/search/waybill?searchType=phone&phone=${phone}`,
+    yuantong: `https://www.yto.net.cn/search?keyword=${phone}&type=phone`,
+    zhongtong: `https://www.zto.com/express/search?number=${phone}&type=phone`,
+    shentong: `https://www.sto.cn/search?txtSearchKey=${phone}&searchType=phone`,
+    yunda: `https://www.yundaex.com/search?keyword=${phone}&type=phone`,
+    jd: `https://wjd.360buy.com/inquiry/index.action?phone=${phone}`
+  };
+
+  const url = urls[com] || urls.shunfeng;
+  const comName = document.getElementById('comPhone').selectedOptions[0].text;
+
+  saveHistory({ type: 'phone', key: phone, com, comName, time: formatTime() });
+
+  showLoading();
+  setTimeout(() => {
+    location.href = url;
+  }, 400);
+}
+
+document.getElementById('phone').addEventListener('keydown', e => { if (e.key === 'Enter') queryByPhone(); });
+document.getElementById('phone').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 11);
+});
+
+// ===== 生成分享链接 =====
+function showLinkModal() {
+  const activePanel = document.querySelector('.panel.active').id;
+  let params = [];
+
+  if (activePanel === 'panel-num') {
+    const num = document.getElementById('num').value.trim();
+    if (!num) { showToast('请先输入单号'); document.getElementById('num').focus(); return; }
+    params.push(`nu=${encodeURIComponent(num)}`);
+    const com = document.getElementById('com').value;
+    if (com) params.push(`com=${com}`);
+    params.push('type=num');
+  } else {
+    const phone = document.getElementById('phone').value.trim();
+    if (!phone) { showToast('请先输入手机号'); document.getElementById('phone').focus(); return; }
+    params.push(`phone=${encodeURIComponent(phone)}`);
+    const com = document.getElementById('comPhone').value;
+    params.push(`com=${com}`);
+    params.push('type=phone');
+  }
+
+  const shareUrl = location.href.split('#')[0].split('?')[0] + (params.length ? '?' + params.join('&') : '');
+  document.getElementById('linkOutput').value = shareUrl;
+  document.getElementById('linkModal').classList.add('show');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function copyLink() {
+  copyText(document.getElementById('linkOutput').value);
+  closeModal('linkModal');
+}
+
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板')).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const input = document.createElement('input');
+  input.value = text;
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.select();
+  try {
+    document.execCommand('copy');
+    showToast('已复制');
+  } catch(e) {
+    showToast('复制失败，请长按手动复制');
+  }
+  document.body.removeChild(input);
+}
+
+function clearHistory() {
+  if (history.length === 0) { showToast('记录已为空'); return; }
+  if (confirm('确定清空所有查询记录？')) {
+    history = [];
+    localStorage.removeItem('taozi_express_history');
+    renderHistory();
+    showToast('记录已清空');
+  }
+}
+
+// ===== Toast =====
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function formatTime() {
+  const d = new Date();
+  return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// ===== URL 参数自动回填 =====
+(function initFromUrl() {
+  const params = new URLSearchParams(location.search);
+  const type = params.get('type');
+  if (type === 'num' && params.get('nu')) {
+    switchTab('num');
+    document.getElementById('num').value = params.get('nu');
+    if (params.get('com')) document.getElementById('com').value = params.get('com');
+    showToast('🍑 参数已自动填入，可直接查询');
+  } else if (type === 'phone' && params.get('phone')) {
+    switchTab('phone');
+    document.getElementById('phone').value = params.get('phone');
+    if (params.get('com')) document.getElementById('comPhone').value = params.get('com');
+    showToast('🍑 参数已自动填入，可直接查询');
+  }
+})();
+
+// 初始化
+renderHistory();
+document.getElementById('num').focus();
+</script>
+</body>
+</html>
