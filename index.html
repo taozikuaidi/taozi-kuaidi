@@ -30,13 +30,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .input-wrap{margin-bottom:14px}
 .input-wrap label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
 .input-wrap label .tip{font-weight:400;font-size:12px;color:#9ca3af;margin-left:4px}
-.input-wrap input,.input-wrap select{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-size:16px;transition:all .2s;background:#fff;appearance:none;-webkit-appearance:none}
-.input-wrap input:focus,.input-wrap select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(236,72,153,.1)}
-.input-wrap select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%23ec4899' d='M7 10L2 5h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.input-wrap input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-size:16px;transition:all .2s;background:#fff}
+.input-wrap input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(236,72,153,.1)}
 
 .btn-primary{width:100%;padding:15px;border:none;border-radius:10px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));cursor:pointer;transition:all .2s;margin-top:4px}
 .btn-primary:active{transform:scale(.98)}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed}
+
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .btn-secondary{padding:12px;border:2px solid var(--border);border-radius:10px;font-size:14px;background:#fff;color:var(--text2);cursor:pointer;transition:all .2s}
 .btn-secondary:active{background:#fdf2f8}
@@ -55,7 +55,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .history-item .actions button{padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;cursor:pointer;white-space:nowrap}
 .history-item .actions .re-query{border-color:var(--primary);color:var(--primary)}
 .history-item .actions .copy-link{color:var(--text2)}
-.history-empty{text-align:center;padding:20px;color:var(--text2);font-size:13px}
 
 .footer{text-align:center;padding:24px 0 16px;font-size:12px;color:#f9a8d4}
 
@@ -105,7 +104,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     </div>
     <div class="input-wrap">
       <label>快递公司 <span class="tip">选"自动识别"即可</span></label>
-      <select id="com">
+      <select id="com" style="width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-size:16px;background:#fff;appearance:none;-webkit-appearance:none">
         <option value="">🔍 自动识别（推荐）</option>
         <option value="shunfeng">顺丰速运</option>
         <option value="yuantong">圆通速递</option>
@@ -121,27 +120,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
     <button class="btn-primary" onclick="queryByNum()">查 询</button>
   </div>
 
-  <!-- 手机号查询面板 -->
+  <!-- 手机号查询面板（不指定公司） -->
   <div class="panel" id="panel-phone">
     <div class="input-wrap">
       <label>手机号码 <span class="tip">收件/寄件人手机号</span></label>
       <input id="phone" type="tel" placeholder="输入 11 位手机号" maxlength="11" autocomplete="off" inputmode="numeric">
     </div>
-    <div class="input-wrap">
-      <label>快递公司 <span class="tip">手机号查询需指定公司</span></label>
-      <select id="comPhone">
-        <option value="shunfeng">顺丰速运</option>
-        <option value="yuantong">圆通速递</option>
-        <option value="zhongtong">中通快递</option>
-        <option value="shentong">申通快递</option>
-        <option value="yunda">韵达快递</option>
-        <option value="jd">京东物流</option>
-      </select>
-    </div>
-    <button class="btn-primary" onclick="queryByPhone()">查 询</button>
-    <p style="font-size:12px;color:#9ca3af;margin-top:10px;line-height:1.6">
-      💡 手机号查询会跳转到对应快递公司官网，请在官网首页输入手机号查件。
+    <p style="font-size:12px;color:#9ca3af;margin-top:4px;line-height:1.6">
+      💡 不用选公司，直接跳到快递100聚合查件页，全网自动匹配
     </p>
+    <button class="btn-primary" onclick="queryByPhone()">查 询</button>
   </div>
 
   <div class="btn-row">
@@ -173,20 +161,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
   </div>
 </div>
 
-<!-- 手机号结果弹窗 -->
-<div class="modal-overlay" id="phoneModal">
-  <div class="modal">
-    <h3>📱 手机号查件</h3>
-    <p class="sub" id="phoneTip"></p>
-    <input id="phoneOutput" readonly onclick="this.select()">
-    <p class="hint">即将跳转到快递公司官网，请在官网首页输入手机号查件</p>
-    <div class="modal-btns">
-      <button class="cancel" onclick="closeModal('phoneModal')">取消</button>
-      <button class="confirm" onclick="openPhoneLink()">立即跳转</button>
-    </div>
-  </div>
-</div>
-
 <div class="loading-overlay" id="loading">
   <div class="spinner"></div>
   <p>正在跳转...</p>
@@ -206,16 +180,6 @@ function switchTab(name) {
 function showLoading() { document.getElementById('loading').classList.add('show'); }
 function hideLoading() { document.getElementById('loading').classList.remove('show'); }
 
-// ===== 各家快递官网首页（手机号查件统一跳官网，绝不会404）=====
-const officialSites = {
-  shunfeng:  'https://www.sf-express.com/cn/zh/search/waybill',
-  yuantong:  'https://www.yto.net.cn',
-  zhongtong: 'https://www.zto.com',
-  shentong:  'https://www.sto.cn',
-  yunda:     'https://www.yundaex.com',
-  jd:        'https://wjd.360buy.com/inquiry/index.action'
-};
-
 let history = JSON.parse(localStorage.getItem('taozi_express_history') || '[]');
 
 function saveHistory(item) {
@@ -233,13 +197,13 @@ function renderHistory() {
     return;
   }
   list.innerHTML = history.map(h => `
-    <div class="history-item" onclick="${h.type === 'num' ? `fillNum('${h.key}','${h.com || ''}')` : `fillPhone('${h.key}','${h.com || ''}')`}">
+    <div class="history-item" onclick="${h.type === 'num' ? `fillNum('${h.key}','${h.com || ''}')` : `fillPhone('${h.key}')`}">
       <div class="info">
         <div class="num">${h.type === 'num' ? '📄 ' : '📱 '}${h.key}</div>
         <div class="com">${h.comName || '自动识别'} · ${h.time}</div>
       </div>
       <div class="actions" onclick="event.stopPropagation()">
-        <button class="re-query" onclick="${h.type === 'num' ? `fillNumAndQuery('${h.key}','${h.com || ''}')` : `fillPhoneAndQuery('${h.key}','${h.com || ''}')`}">查询</button>
+        <button class="re-query" onclick="${h.type === 'num' ? `fillNumAndQuery('${h.key}','${h.com || ''}')` : `fillPhoneAndQuery('${h.key}')`}">查询</button>
         <button class="copy-link" onclick="copyText('${h.key}')">复制</button>
       </div>
     </div>
@@ -253,13 +217,12 @@ function fillNum(num, com) {
   document.getElementById('num').focus();
 }
 function fillNumAndQuery(num, com) { fillNum(num, com); queryByNum(); }
-function fillPhone(phone, com) {
+function fillPhone(phone) {
   switchTab('phone');
   document.getElementById('phone').value = phone;
-  document.getElementById('comPhone').value = com;
   document.getElementById('phone').focus();
 }
-function fillPhoneAndQuery(phone, com) { fillPhone(phone, com); queryByPhone(); }
+function fillPhoneAndQuery(phone) { fillPhone(phone); queryByPhone(); }
 
 // ===== 单号查询（快递100，直接跳转）=====
 function queryByNum() {
@@ -293,27 +256,17 @@ function queryByNum() {
 
 document.getElementById('num').addEventListener('keydown', e => { if (e.key === 'Enter') queryByNum(); });
 
-// ===== 手机号查询（跳官网首页，不拼参数，绝不会404）=====
+// ===== 手机号查询（不指定公司，跳快递100聚合查件）=====
 function queryByPhone() {
   const phone = document.getElementById('phone').value.trim().replace(/\s+/g, '');
-  const com = document.getElementById('comPhone').value;
-
   if (!/^1[3-9]\d{9}$/.test(phone)) { showToast('请输入正确的 11 位手机号'); document.getElementById('phone').focus(); return; }
 
-  const url = officialSites[com] || officialSites.shunfeng;
-  const comName = document.getElementById('comPhone').selectedOptions[0].text;
+  showLoading();
+  // 跳到快递100官网手机号查件页（聚合全网，不用选公司）
+  const url = 'https://www.kuaidi100.com/';
+  saveHistory({ type: 'phone', key: phone, comName: '手机号聚合查件', time: formatTime() });
 
-  document.getElementById('phoneTip').textContent = `即将跳转到 ${comName} 官网，请在官网输入手机号 ${phone} 查件`;
-  document.getElementById('phoneOutput').value = url;
-  document.getElementById('phoneModal').classList.add('show');
-
-  saveHistory({ type: 'phone', key: phone, com, comName, time: formatTime() });
-}
-
-function openPhoneLink() {
-  const url = document.getElementById('phoneOutput').value;
-  location.href = url;
-  closeModal('phoneModal');
+  setTimeout(() => { location.href = url; }, 400);
 }
 
 document.getElementById('phone').addEventListener('keydown', e => { if (e.key === 'Enter') queryByPhone(); });
@@ -337,8 +290,6 @@ function showLinkModal() {
     const phone = document.getElementById('phone').value.trim();
     if (!phone) { showToast('请先输入手机号'); document.getElementById('phone').focus(); return; }
     params.push(`phone=${encodeURIComponent(phone)}`);
-    const com = document.getElementById('comPhone').value;
-    params.push(`com=${com}`);
     params.push('type=phone');
   }
 
@@ -410,7 +361,6 @@ function formatTime() {
   } else if (type === 'phone' && params.get('phone')) {
     switchTab('phone');
     document.getElementById('phone').value = params.get('phone');
-    if (params.get('com')) document.getElementById('comPhone').value = params.get('com');
     showToast('🍑 参数已自动填入，可直接查询');
   }
 })();
